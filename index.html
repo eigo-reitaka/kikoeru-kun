@@ -591,7 +591,7 @@ ckhow(){
     <p style="font-size:15px">${jp(x[1])}</p>
     <p class="ens" style="font-size:19px">${slashed(x[2])}</p><p class="ja">${x[3]}</p>
     <div class="sline" style="border:0;padding:6px 0 0"><button class="pl" data-ex="${n}" aria-label="多読の例文を聞く"><span class="tri"></span></button>
-      <div><p class="sub" style="font-size:12px">多読の例文で聞く</p><p class="en2" style="font-size:16px;line-height:1.7">${e.html}</p><p class="ja">${e.it.ja}</p></div></div>
+      <div><p class="sub" style="font-size:12px">多読の例文で聞く（区切りで少し間をあけて読んでいます）</p><p class="en2" style="font-size:16px;line-height:1.7">${e.html}</p><p class="ja">${e.it.ja}</p></div></div>
   </div>`}).join("")}
   <h2 style="font-size:18px">区切らないところ</h2>
   <div class="rv">
@@ -617,7 +617,7 @@ ckhow(){
     <a href="https://tfcs.baruch.cuny.edu/thought-groups/">Baruch College, CUNY「Tools for Clear Speech」Thought Groups</a>
   </div>`;
   $$("[data-ex]").forEach(b=>b.onclick=()=>{const x=HOW[+b.dataset.ex][4];if(b.classList.contains("on")){stop();b.classList.remove("on");return}
-    $$("[data-ex]").forEach(o=>o.classList.remove("on"));b.classList.add("on");sayLine(x[0],x[1],()=>b.classList.remove("on"))});
+    $$("[data-ex]").forEach(o=>o.classList.remove("on"));b.classList.add("on");play("how"+b.dataset.ex,()=>b.classList.remove("on"))});
   $("#go").onclick=()=>{S.stack.pop();render()};
 },
 ckmenu(){
