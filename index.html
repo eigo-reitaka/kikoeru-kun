@@ -625,10 +625,9 @@ ckmenu(){
   app.innerHTML=`${BACK}
   <div class="stack" style="gap:4px"><span class="eyebrow">チャンク</span><h2>${jp("単語で区切らず、かたまりで聞く・読む")}</h2></div>
   <button class="card ${S.rec.ck.how?"":"main"}" id="how"><span class="num ${S.rec.ck.how?"done":""}" style="font-size:15px">/</span>
-    <span class="body"><span class="t">チャンクの区切り方</span><span class="m">英語はどこで区切る？　前置詞・接続詞・関係代名詞・to不定詞の前など</span></span><span class="chev"></span></button>
+    <span class="body"><span class="t">最初に確認！<br>チャンクの区切り方</span></span><span class="chev"></span></button>
   <div class="rowsb"><h2 style="font-size:18px">多読 30話</h2><span class="sub">読了 ${done} / ${LIB.stories.length}</span></div>
   <div class="prog"><span style="width:${done/LIB.stories.length*100}%"></span></div>
-  <p class="sub">${jp("読む → 内容チェック → 音で練習（弱形・短縮形・音のつながり）の順に進みます。")}</p>
   <div class="seg c3" role="group" aria-label="コース">${["A","B","C"].map(k=>`<button data-lv="${k}" aria-pressed="${S.level===k}">${LIB.lv[k].name}コース</button>`).join("")}</div>
   <div class="seg c3" role="group" aria-label="テーマ">${Object.keys(CATS).map(k=>`<button data-cat="${k}" aria-pressed="${S.cat===k}">${CATS[k]}</button>`).join("")}</div>
   <p class="sub">${S.level==="C"?`上級コースは、映画・ドラマについていける速さ（${tl(lv)}語/分）を目指します。関係代名詞や無生物主語など、日本語にない語順が多く出てきます。`:S.checked?`${lv.name}コースの目標は ${tl(lv)}語/分。`:'<button class="skip" id="lc" style="padding:0">先にレベルチェックをする</button>'}${S.cat==="story"?"物語は第1話から順にどうぞ。":""}</p>
@@ -644,7 +643,7 @@ sintro({id}){
   app.innerHTML=`${BACK}
   <div class="stack" style="gap:6px"><span class="eyebrow">${s.theme}　${LIB.lv[S.level].name}コース</span>
     <p class="ens" style="font-size:28px;font-weight:700">${s.title}</p><p class="sub">${s.ja}　・　${wcount(st)}語</p></div>
-  <div class="tips"><p><b>1.</b> ${jp("日本語に訳さず、かたまりごとに前から読む")}</p><p><b>2.</b> ${jp("わからない単語は飛ばす")}</p><p><b>3.</b> 戻って読み直さない</p></div>
+  <div class="tips"><p><b>1.</b> ${jp("かたまりごとに前から読む")}</p><p><b>2.</b> ${jp("日本語に訳してもいいが、日本語の語順に戻して訳すのはNG")}</p><p><b>3.</b> ${jp("分からない単語は、タップして確認")}</p></div>
   <div class="seg" role="group" aria-label="区切り"><button data-sl="1" aria-pressed="${S.slash}">区切りを表示</button><button data-sl="0" aria-pressed="${!S.slash}">区切りなし</button></div>
   <button class="btn" id="st">読みはじめる</button><p class="sub" style="text-align:center">押すとタイマーが始まります</p>
   <button class="btn ghost" id="pr">読まずに音で練習する</button>`;
