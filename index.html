@@ -127,6 +127,12 @@ button:focus-visible,[role=button]:focus-visible{outline:3px solid var(--cL);out
 .logo{font-size:46px;font-weight:900;line-height:1.1;letter-spacing:.02em;color:var(--accent);margin:0}
 .tagline{font-size:21px;line-height:1.45}
 .skip{align-self:center;color:var(--sub);font-size:14px;font-weight:700;text-decoration:underline;text-underline-offset:4px;padding:8px}
+.rvq{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.rvb{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.mk{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:15px}
+.mk.o{background:var(--ok-bg);color:var(--ok)}.mk.x{background:var(--bg);color:var(--ng);border:2px solid var(--ng)}
+.rva{font-size:15px;margin:0}.rvy{font-size:14px;color:var(--ng);margin:0}
+.rvp summary{cursor:pointer;font-weight:700;color:var(--accent);padding:6px 0}
 .rv{border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px}
 .ens{font-family:var(--en);font-size:22px;line-height:1.6;font-weight:500}
 .ens .dim{color:var(--dim)}
@@ -211,14 +217,14 @@ const norm=(w)=>w.toLowerCase().replace(/[^a-z']/g,"");
 const KEY="eigomimi_v1";
 const S={days:[],stack:[["home"]],slow:false,showJa:false,slash:true,focus:"K",level:"A",cat:"travel",checked:false,tut:false,before:null,rec:{st:{},ck:{},wk:{},ct:{},ln:{},fin:{}}};
 try{const d=JSON.parse(localStorage.getItem(KEY)||"{}");S.tut=!!d.tut;if(typeof d.before==="string")S.before=d.before;if(["A","B","C"].includes(d.level))S.level=d.level;if(d.stv!==2)S.rec.st={};if(Array.isArray(d.days))S.days=d.days.filter(x=>typeof x==="string"&&/^\d{4}-\d\d-\d\d$/.test(x));S.checked=!!d.checked;
-  if(d.rec&&typeof d.rec==="object")for(const k in S.rec)if(d.rec[k]&&typeof d.rec[k]==="object")S.rec[k]=d.rec[k]}catch(e){}
+  if(d.lastLv&&typeof d.lastLv==="object"&&d.lastLv.R&&Array.isArray(d.lastLv.R.v))S.lastLv=d.lastLv;if(d.rec&&typeof d.rec==="object")for(const k in S.rec)if(d.rec[k]&&typeof d.rec[k]==="object")S.rec[k]=d.rec[k]}catch(e){}
 const ds=(d)=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 function markDay(){const t=ds(new Date());if(!S.days.includes(t)){S.days.push(t);save()}}
 function streakNow(){const set=new Set(S.days),d=new Date();if(!set.has(ds(d)))d.setDate(d.getDate()-1);let n=0;while(set.has(ds(d))){n++;d.setDate(d.getDate()-1)}return n}
 function streakBest(){const a=[...new Set(S.days)].sort();let best=0,run=0,prev=null;
   for(const x of a){const t=new Date(x+"T12:00:00");run=prev&&Math.round((t-prev)/864e5)===1?run+1:1;best=Math.max(best,run);prev=t}return best}
 const GOALS=[[7,"1週間"],[30,"1か月"],[90,"3か月"],[180,"半年"],[365,"1年"]];
-function save(){try{localStorage.setItem(KEY,JSON.stringify({stv:2,days:S.days,tut:S.tut,level:S.level,checked:S.checked,rec:S.rec}))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({stv:2,days:S.days,tut:S.tut,level:S.level,checked:S.checked,rec:S.rec,lastLv:S.lastLv||null}))}catch(e){}}
 
 /* ===== 音声（プレーヤーは1つを使い回す） ===== */
 const player=new Audio();player.preload="auto";
@@ -456,8 +462,8 @@ log(){
   </div>
   <h2 style="font-size:18px;margin-top:6px">練習の進み具合</h2>
   <div class="stats">${rows.map(r=>`<div class="stat"><b>${r[1]} / ${r[2]}</b><span>${r[0]}</span></div>`).join("")}</div>
-  <button class="btn ghost" id="lv">レベルチェックをやり直す</button><button class="btn ghost" id="tu">使い方をもう一度見る</button>`;
-  $("#tu").onclick=()=>go("tut",{n:0});$("#lv").onclick=()=>go("lvcheck",{});
+  ${S.lastLv&&S.lastLv.R?`<button class="btn ghost" id="lr">前回のレベルチェックの答え合わせ</button>`:""}<button class="btn ghost" id="lv">レベルチェックをやり直す</button><button class="btn ghost" id="tu">使い方をもう一度見る</button>`;
+  $("#tu").onclick=()=>go("tut",{n:0});$("#lv").onclick=()=>go("lvcheck",{});if($("#lr"))$("#lr").onclick=()=>go("lvreview",{R:S.lastLv.R});
 }
 };
 /* ===== 多読（チャンクの章）===== */
@@ -716,9 +722,9 @@ const LVQ={
   "It sounds silly, but it works.","That ten-minute walk tells my brain that work is over."],
  rq:[["在宅勤務を始めて、筆者が気づいた問題は？",["前より長い時間働いていた","電車に乗り遅れるようになった","同僚と話せなくなった"]],
      ["同僚のアドバイスは？",["6時にパソコンを閉じて、短い散歩に出る","朝ごはんをしっかり食べる","金曜日だけは会社に行く"]]],
- listen:[{au:"lv0",lb:"やさしい",o:["駅がどこか教えてもらえますか？","駅まで一緒に行きませんか？","駅は何時に開きますか？"]},
-         {au:"lv1",lb:"ふつう",o:["電話するつもりだったけど、スマホの電池が切れた","電話したけど、出てくれなかった","新しいスマホを買うつもりだった"]},
-         {au:"lv2",lb:"ドラマの速さ",o:["話してた仕事、結局受かったの？","仕事の話、まだ終わってないの？","その仕事、もう辞めたの？"]}]
+ listen:[{au:"lv0",lb:"やさしい",en:"Could you tell me where the station is?",o:["駅がどこか教えてもらえますか？","駅まで一緒に行きませんか？","駅は何時に開きますか？"]},
+         {au:"lv1",lb:"ふつう",en:"I was going to call you, but my phone died.",o:["電話するつもりだったけど、スマホの電池が切れた","電話したけど、出てくれなかった","新しいスマホを買うつもりだった"]},
+         {au:"lv2",lb:"ドラマの速さ",en:"Did you end up getting the job you were telling me about?",nt:"Did you が「ジュ」と1つにつながり、end up も「エンダップ」とつながっています。",o:["話してた仕事、結局受かったの？","仕事の話、まだ終わってないの？","その仕事、もう辞めたの？"]}]
 };
 const PWORDS=LVQ.passage.join(" ").split(/\s+/).length;
 function lvJudge(r){
@@ -728,7 +734,7 @@ function lvJudge(r){
   return "A"}
 Object.assign(VIEWS,{
 lvcheck(p){
-  const R=p.R||{v:[],r:[],l:[],wpm:0,ms:0},st=p.st||"intro",set=(np)=>{S.stack[S.stack.length-1]=["lvcheck",{...np,R}];render()};
+  const R=p.R||{v:[],r:[],l:[],va:[],ra:[],la:[],wpm:0,ms:0},st=p.st||"intro",set=(np)=>{S.stack[S.stack.length-1]=["lvcheck",{...np,R}];render()};
   const bar=(pct,label)=>`<div class="prog"><span style="width:${pct}%"></span></div><p class="sub">${label}</p>`;
   if(st==="intro"){
     app.innerHTML=`${BACK}<span class="eyebrow">レベルチェック</span><h2>${jp("3つのパートで、あなたに合うコースを案内します。")}</h2>
@@ -741,7 +747,7 @@ lvcheck(p){
     app.innerHTML=`${BACK}${bar(i/6*33,`パート1　単語　${i+1} / 6`)}<p class="q">この単語の意味は？</p>
     <p class="q" style="font-family:var(--en);font-size:28px">${q.en}</p>
     <div class="stack">${opts.map(o=>`<button class="opt" data-o="${o}">${o}</button>`).join("")}<button class="opt" data-o="" style="color:var(--sub);border-style:dashed">わからない</button></div>`;
-    $$("[data-o]").forEach(b=>b.onclick=()=>{R.v[i]=b.dataset.o===q.o[0];set(i<5?{st:"vocab",i:i+1}:{st:"rintro"})});return}
+    $$("[data-o]").forEach(b=>b.onclick=()=>{R.va[i]=b.dataset.o;R.v[i]=b.dataset.o===q.o[0];set(i<5?{st:"vocab",i:i+1}:{st:"rintro"})});return}
   if(st==="rintro"){
     app.innerHTML=`${BACK}${bar(33,"パート2　速読")}<h2>${jp("次は、短い文章を読みます。")}</h2>
     <div class="tips"><p>${jp("ふだんどおりの速さで、意味をとりながら読んでください。")}</p><p>${jp("読み終わったら「読み終わった」を押します。そのあと内容を2問聞きます。")}</p></div>
@@ -757,7 +763,7 @@ lvcheck(p){
     const i=p.i,q=LVQ.rq[i],opts=shuffle(q[1]);
     app.innerHTML=`${BACK}${bar(45+i*8,`パート2　内容チェック　${i+1} / 2`)}<p class="sub">${jp("文章は見ずに答えてください。")}</p><p class="q">${jp(q[0])}</p>
     <div class="stack">${opts.map(o=>`<button class="opt" data-o="${o}">${o}</button>`).join("")}<button class="opt" data-o="" style="color:var(--sub);border-style:dashed">わからない</button></div>`;
-    $$("[data-o]").forEach(b=>b.onclick=()=>{R.r[i]=b.dataset.o===q[1][0];set(i<1?{st:"rq",i:1}:{st:"listen",i:0})});return}
+    $$("[data-o]").forEach(b=>b.onclick=()=>{R.ra[i]=b.dataset.o;R.r[i]=b.dataset.o===q[1][0];set(i<1?{st:"rq",i:1}:{st:"listen",i:0})});return}
   if(st==="listen"){
     const i=p.i,q=LVQ.listen[i],opts=shuffle(q.o);let plays=0;
     app.innerHTML=`${BACK}${bar(66+i*11,`パート3　聞き取り　${i+1} / 3（${q.lb}）`)}<p class="q">${jp("英文を聞いて、意味を選んでください。")}</p>
@@ -765,7 +771,22 @@ lvcheck(p){
     <div class="stack" id="ops" hidden>${opts.map(o=>`<button class="opt" data-o="${o}">${o}</button>`).join("")}<button class="opt" data-o="" style="color:var(--sub);border-style:dashed">わからない</button></div>`;
     const pl=$("#pl");pl.onclick=()=>{if(plays>=2||pl.classList.contains("on"))return;plays++;$("#ops").hidden=false;
       $("#pc").textContent=plays>=2?"もう聞けません。意味を選んでください":"あと1回聞けます";play(q.au,()=>{if(plays>=2)pl.disabled=true},pl)};
-    $$("[data-o]").forEach(b=>b.onclick=()=>{stop();R.l[i]=b.dataset.o===q.o[0];if(i<2)set({st:"listen",i:i+1});else{const lv=lvJudge(R);S.level=lv;S.checked=true;S.lastLv={wpm:R.wpm,v:R.v.filter(Boolean).length,r:R.r.filter(Boolean).length,l:R.l.filter(Boolean).length};save();S.stack=[["home"],["lvresult",{R,lv}]];render()}});return}
+    $$("[data-o]").forEach(b=>b.onclick=()=>{stop();R.la[i]=b.dataset.o;R.l[i]=b.dataset.o===q.o[0];if(i<2)set({st:"listen",i:i+1});else{const lv=lvJudge(R);S.level=lv;S.checked=true;S.lastLv={wpm:R.wpm,v:R.v.filter(Boolean).length,r:R.r.filter(Boolean).length,l:R.l.filter(Boolean).length,R};save();S.stack=[["home"],["lvresult",{R,lv}]];render()}});return}
+},
+lvreview({R}){
+  const mk=(ok)=>`<span class="mk ${ok?"o":"x"}">${ok?"○":"×"}</span>`;
+  const you=(a)=>a?a:"わからない";
+  const row=(ok,qhtml,right,yours)=>`<div class="rvq">${mk(ok)}<div class="rvb">${qhtml}<p class="rva">正解：<b>${right}</b></p>${ok?"":`<p class="rvy">あなたの答え：${you(yours)}</p>`}</div></div>`;
+  const sec=(t,n,m,body)=>`<h2 style="font-size:18px;margin-top:8px">${t}<span class="sub" style="margin-left:8px">${n} / ${m}</span></h2><div class="stack" style="gap:10px">${body}</div>`;
+  const v=LVQ.vocab.map((q,i)=>row(!!R.v[i],`<p class="ens" style="font-size:20px">${q.en}</p>`,q.o[0],R.va&&R.va[i])).join("");
+  const r=LVQ.rq.map((q,i)=>row(!!R.r[i],`<p class="q" style="font-size:16px">${jp(q[0])}</p>`,q[1][0],R.ra&&R.ra[i])).join("");
+  const l=LVQ.listen.map((q,i)=>row(!!R.l[i],`<div class="rowsb" style="gap:10px;justify-content:flex-start"><button class="pl" data-au="${q.au}" aria-label="聞く"><span class="tri"></span></button><span class="sub">${q.lb}</span></div><p class="ens" style="font-size:18px">${q.en}</p>${q.nt?`<p class="ja">${jp(q.nt)}</p>`:""}`,q.o[0],R.la&&R.la[i])).join("");
+  app.innerHTML=`${BACK}<span class="eyebrow">レベルチェック</span><h2>答え合わせ</h2>
+  ${sec("パート1　単語",R.v.filter(Boolean).length,6,v)}
+  ${sec("パート2　速読",R.r.filter(Boolean).length,2,r+`<details class="rvp"><summary>読んだ文章をもう一度見る</summary><div class="read"><p>${LVQ.passage.join(" ")}</p></div></details>`)}
+  ${sec("パート3　聞き取り",R.l.filter(Boolean).length,3,l)}
+  <p class="sub">${jp("聞き取りは、何度でも聞き直せます。英文を見ながら聞いて、どこが聞き取れなかったかを確かめてみてください。")}</p>`;
+  $$("[data-au]").forEach(b=>b.onclick=()=>{if(b.classList.contains("on")){stop();return}play(b.dataset.au,null,b)});
 },
 lvresult({R,lv}){
   const L=LIB.lv[lv],v=R.v.filter(Boolean).length,ok=R.r.filter(Boolean).length,l=R.l.filter(Boolean).length,tooFast=R.wpm>700;
@@ -780,9 +801,10 @@ lvresult({R,lv}){
   <div class="tips"><p>${jp(L.desc+"の読みものを、チャンクで30話読めます。目標は"+tl(L)+"語/分です。")}</p>
   ${lv!=="C"?`<p>${jp(lv==="A"?"まずは初級コースで、意味をとりながら最後まで読む練習から始めましょう。":"読む速さが150語/分を超え、ドラマの速さの英文が聞き取れるようになったら、上級コースに挑戦してみてください。")}</p>`:`<p>${jp("映画・ドラマの速さについていける力があります。上級コースで200語/分を目指しましょう。")}</p>`}
   <p>${jp("コースは、チャンクの章でいつでも切り替えられます。")}</p></div>
+  <button class="btn ghost" id="rv">答え合わせを見る</button>
   <p class="q" style="margin-top:6px">次はどちらから始めますか？</p>
   ${choiceCards()}`;
-  bindChoice();
+  bindChoice();$("#rv").onclick=()=>go("lvreview",{R});
 }
 });
 
